@@ -1,7 +1,7 @@
 #include <iostream>
 #include <list>
+#include "MazeRunner.hpp"
 #include "Robot.hpp"
-#include "Maze.hpp"
 
 using namespace std;
 
@@ -17,8 +17,7 @@ void printNodes(list<Node> nodes)
 int main()
 {
 	Robot *robot = new Robot();
-	Maze *maze = new Maze(Coordinate(0., 0.));
-	printNodes(maze->getNodes());
+
 	if (!robot->connect())
 	{
 		cout << "Could not connect on robot!" << endl;
@@ -26,7 +25,9 @@ int main()
 	}
 
 	cout << "DISTANCIA SEGURA: " << robot->calculateSafeDistance() << endl;
-
+	MazeRunner *maze = new MazeRunner(robot);
+	printNodes(maze->getNodes());
+	
 	robot->move(ROBOT_SPEED);
 
 	while (robot->isConnected())

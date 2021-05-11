@@ -3,9 +3,18 @@
 
 struct Coordinate
 {
-    float x = -2;
-    float y = -2;
-    Coordinate(float x, float y): x(x), y(y) {}
+    float x = INT_MAX;
+    float y = INT_MAX;
+    Coordinate(float x, float y) : x(x), y(y) {}
+};
+
+enum Direction
+{
+    RIGHT_DIR,
+    TOP_DIR,
+    LEFT_DIR,
+    DOWN_DIR,
+    DIRECTION_QTY
 };
 
 #endif

@@ -53,6 +53,19 @@ public:
         return safeDistance;
     };
 
+    Coordinate getPos()
+    {
+        return Coordinate(this->getX(), this->getY());
+    }
+
+    Direction getDirection()
+    {
+        float theta = this->getTheta();
+        theta = theta == 360 ? 0 : theta;
+        theta / 4;
+        return (Direction)(theta / 90);
+    }
+
     // a distancia segura eh calculada com base na media das distancias laterais iniciais do robo, ou seja,
     // ela fara com que o robo ande sempre com aproximadamente a mesma distancia entre as paredes.
     float calculateSafeDistance();
@@ -62,6 +75,8 @@ public:
 
     // retorna o bumper que estiver ativo.
     Bumper getBumperActive();
+
+    bool *getAvaliableDir();
 
     // retorna o theta "absoluto" (0 a 360 com base no plano do ambiente) desejado com uma rotacao.
     float getDesiredTheta(float thetaRotation, float thetaBeforeRotation);
@@ -103,6 +118,51 @@ Bumper Robot::getBumperActive()
         }
     }
     return NONE;
+}
+
+bool *Robot::getAvaliableDir()
+{
+    const float minAvaliableDistance = safeDistance * 2;
+    bool dir[DIRECTION_QTY] = {false};
+    Direction currentDir = getDirection();
+    Direction leftSonarDir, rightSonarDir;
+
+    switch (currentDir)
+    {
+    case RIGHT_DIR:
+        leftSonarDir = TOP_DIR;
+        rightSonarDir = DOWN_DIR;
+        break;
+    case DOWN_DIR:
+        leftSonarDir = RIGHT_DIR;
+        rightSonarDir = LEFT_DIR;
+        break;
+    case LEFT_DIR:
+        leftSonarDir = DOWN_DIR;
+        rightSonarDir = TOP_DIR;
+        break;
+    default:
+        leftSonarDir = LEFT_DIR;
+        rightSonarDir = RIGHT_DIR;
+        break;
+    }
+
+    if (this->getSonar(FRONT_SONAR) >= minAvaliableDistance)
+    {
+        dir[(int)currentDir] = true;
+    }
+
+    if (this->getSonar(RIGHT_SONAR) >= minAvaliableDistance)
+    {
+        dir[(int)rightSonarDir] = true;
+    }
+
+    if (this->getSonar(LEFT_SONAR) >= minAvaliableDistance)
+    {
+        dir[(int)leftSonarDir] = true;
+    }
+
+    return dir;
 }
 
 float Robot::getDesiredTheta(float thetaRotation, float thetaBeforeRotation)

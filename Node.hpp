@@ -7,15 +7,6 @@
 
 using std::array;
 
-enum Direction
-{
-    TOP_DIR,
-    LEFT_DIR,
-    DOWN_DIR,
-    RIGHT_DIR,
-    DIRECTION_QTY
-};
-
 class Node
 {
 public:
@@ -83,24 +74,9 @@ public:
         pos.y = coordinate.y;
     }
 
-    void setTop(Node *n, int len = 1)
+    void setDirection(Node *n, Direction dir, int len = 1)
     {
-        directions[TOP_DIR].set(n, len);
-    }
-
-    void setDown(Node *n, int len = 1)
-    {
-        directions[DOWN_DIR].set(n, len);
-    }
-
-    void setLeft(Node *n, int len = 1)
-    {
-        directions[LEFT_DIR].set(n, len);
-    }
-
-    void setRight(Node *n, int len = 1)
-    {
-        directions[RIGHT_DIR].set(n, len);
+        directions[dir].set(n, len);
     }
 
     void setVisited(bool b)
