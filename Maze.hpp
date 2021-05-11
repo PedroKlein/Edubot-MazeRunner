@@ -12,23 +12,39 @@ class Maze
 {
 
 private:
-    Node *initNode;
+    list<Node> nodes;
+    Node *currentNode;
 
 public:
-    ~Maze() {};
+    ~Maze() {}
 
     Maze(Coordinate initPos)
     {
-        *initNode = new Node(initPos);
-        Node *rightDir = new Node();
-
+        Node *initNode = addNode(initPos);
+        Node *rightDir = addEmptyNode();
         initNode->setVisited(true);
         initNode->setRight(rightDir, INT_MAX);
-    };
+        currentNode = initNode;
+    }
 
-    *Node getInitNode()
+    list<Node> getNodes()
     {
-        return initNode;
+        return nodes;
+    }
+
+    Node *addNode(Coordinate pos)
+    {
+        Node node;
+        node.setCoordinate(pos);
+        nodes.push_back(node);
+        return &nodes.back();
+    }
+
+    Node *addEmptyNode()
+    {
+        Node node;
+        nodes.push_back(node);
+        return &nodes.back();
     }
 };
 

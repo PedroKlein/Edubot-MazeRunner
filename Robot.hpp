@@ -46,7 +46,7 @@ private:
     float safeDistance = 0;
 
 public:
-    Robot();
+    Robot(){};
 
     float getSafeDistance()
     {
