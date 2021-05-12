@@ -1,11 +1,12 @@
 #ifndef __ROBOT__
 #define __ROBOT__
 
+#include <iostream>
 #include "libs/EdubotLib.hpp"
 #include "Globals.hpp"
 
-// macro para valor absoluto.
-#define ABS(x) ((x) >= 0 ? (x) : -(x))
+using namespace std;
+
 
 // delay de 1.5 segundos para a rotacao.
 #define DELAY_ROTATION 1500
@@ -14,7 +15,9 @@
 // delay para executar uma leitura importante e garantir que esta pode ser diferente da anterior.
 #define DELAY_SENSOR_MEASURE 50
 
-#define ROBOT_SPEED 1.
+#define ROBOT_SPEED .4
+#define ROBOT_CAUTION_SPEED ROBOT_SPEED/2.
+
 // Menor distancia que o sensor pode detectar.
 #define DELTA_SAFE_DISTANCE 0.01
 
@@ -44,11 +47,12 @@ class Robot : public EdubotLib
 {
 private:
     float safeDistance = 0;
+    float minAvaliableDistance = 0;
 
 public:
     Robot(){};
 
-    float getSafeDistance()
+    float getSafeDistance() const
     {
         return safeDistance;
     };
@@ -66,6 +70,12 @@ public:
         return (Direction)(theta / 90);
     }
 
+    bool hasPathSideways()
+    {
+        const float minAvaliableDistance = safeDistance * 2;
+        return (this->getSonar(LEFT_SONAR) >= minAvaliableDistance) || (this->getSonar(RIGHT_SONAR) >= minAvaliableDistance);
+    }
+
     // a distancia segura eh calculada com base na media das distancias laterais iniciais do robo, ou seja,
     // ela fara com que o robo ande sempre com aproximadamente a mesma distancia entre as paredes.
     float calculateSafeDistance();
@@ -76,7 +86,7 @@ public:
     // retorna o bumper que estiver ativo.
     Bumper getBumperActive();
 
-    bool *getAvaliableDir();
+    void getAvaliableDir(bool dir[DIRECTION_QTY]);
 
     // retorna o theta "absoluto" (0 a 360 com base no plano do ambiente) desejado com uma rotacao.
     float getDesiredTheta(float thetaRotation, float thetaBeforeRotation);
@@ -96,8 +106,9 @@ public:
 
 float Robot::calculateSafeDistance()
 {
-    this->sleepMilliseconds(DELAY_SENSOR_MEASURE);
+    sleepMilliseconds(DELAY_SENSOR_MEASURE);
     this->safeDistance = (this->getSonar(RIGHT_SONAR) + this->getSonar(LEFT_SONAR)) / 2.;
+    this->minAvaliableDistance = this->safeDistance * 4;
     return this->safeDistance;
 }
 
@@ -120,10 +131,9 @@ Bumper Robot::getBumperActive()
     return NONE;
 }
 
-bool *Robot::getAvaliableDir()
+void Robot::getAvaliableDir(bool dir[DIRECTION_QTY])
 {
-    const float minAvaliableDistance = safeDistance * 2;
-    bool dir[DIRECTION_QTY] = {false};
+    const float minAvaliableDistance = safeDistance * 6;
     Direction currentDir = getDirection();
     Direction leftSonarDir, rightSonarDir;
 
@@ -161,8 +171,6 @@ bool *Robot::getAvaliableDir()
     {
         dir[(int)leftSonarDir] = true;
     }
-
-    return dir;
 }
 
 float Robot::getDesiredTheta(float thetaRotation, float thetaBeforeRotation)
@@ -180,7 +188,7 @@ void Robot::safetyBeforeRotation()
     this->sleepMilliseconds(DELAY_SENSOR_MEASURE);
     if (this->getSonar(FRONT_SONAR) <= this->getSafeDistance() - DELTA_SAFE_DISTANCE)
     {
-        this->move(-ROBOT_SPEED / 4.);
+        this->move(-ROBOT_CAUTION_SPEED);
         while (this->getSonar(FRONT_SONAR) <= this->getSafeDistance())
         {
             this->sleepMilliseconds(DELAY_LOOP);
@@ -208,7 +216,7 @@ void Robot::correctRotation(float desiredTheta)
 {
     Bumper bumper = getBumperActive();
 
-    (int)bumper < (int)BACK_LEFT ? this->move(-ROBOT_SPEED / 6.) : this->move(ROBOT_SPEED / 6.);
+    (int)bumper < (int)BACK_LEFT ? this->move(-ROBOT_CAUTION_SPEED) : this->move(ROBOT_CAUTION_SPEED);
     this->sleepMilliseconds(50);
     faceTheta(desiredTheta);
 }

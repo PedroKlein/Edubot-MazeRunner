@@ -5,15 +5,6 @@
 
 using namespace std;
 
-void printNodes(list<Node> nodes)
-{
-	for (auto it : nodes)
-	{
-		Coordinate pos = it.getCoordinate();
-		cout << "X: " << pos.x << " Y: " << pos.y << " isVisited: " << it.isVisited() << endl;
-	}
-}
-
 int main()
 {
 	Robot *robot = new Robot();
@@ -26,24 +17,39 @@ int main()
 
 	cout << "DISTANCIA SEGURA: " << robot->calculateSafeDistance() << endl;
 	MazeRunner *maze = new MazeRunner(robot);
-	printNodes(maze->getNodes());
-	
+	maze->updateTargetNodeOnDirection();
+	maze->printCurrentNode();
+
 	robot->move(ROBOT_SPEED);
 
 	while (robot->isConnected())
 	{
-		static bool isCloseToWall = false;
+		static bool isCloseToWall = false, hasPathSideways = false;
+
+		if (!hasPathSideways && robot->hasPathSideways())
+		{
+			hasPathSideways = true;
+			maze->updateCurrentNode();
+			maze->updateTargetNodeOnDirection();
+			maze->printCurrentNode();
+		}
 		// quando o robo esta a uma distancia igual ou menor da segura de uma parede ele realiza uma rotacao segura para o lado com mais espaco.
 		if (robot->getSonar(FRONT_SONAR) <= robot->getSafeDistance())
 		{
 			isCloseToWall = false;
 			robot->getSonar(LEFT_SONAR) <= robot->getSonar(RIGHT_SONAR) ? robot->safeRotate(90) : robot->safeRotate(-90);
+			maze->updateTargetNodeOnDirection();
 		}
 		// quando o robo esta perto de uma parede ele desacelera.
-		else if (!isCloseToWall && robot->getSonar(FRONT_SONAR) <= robot->getSafeDistance() * 4.)
+		else if (!isCloseToWall && robot->getSonar(FRONT_SONAR) <= robot->getSafeDistance() * 2.)
 		{
 			isCloseToWall = true;
-			robot->move(ROBOT_SPEED / 4.);
+			robot->move(ROBOT_CAUTION_SPEED);
+		}
+
+		if (!robot->hasPathSideways())
+		{
+			hasPathSideways = false;
 		}
 		robot->sleepMilliseconds(DELAY_LOOP);
 	}

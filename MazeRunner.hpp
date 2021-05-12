@@ -1,13 +1,14 @@
 #ifndef __MAZE_RUNNER__
 #define __MAZE_RUNNER__
 
+#include <iostream>
 #include <climits>
 #include <list>
 #include "Node.hpp"
 #include "Robot.hpp"
 #include "Globals.hpp"
 
-using std::list;
+using namespace std;
 
 class MazeRunner
 {
@@ -42,14 +43,19 @@ public:
         return nodes;
     }
 
+    Node *getCurrentNode()
+    {
+        return currentNode;
+    }
+
     void setCurrentNode(Node *node)
     {
         currentNode = node;
     }
 
-    void setTargetNode(Node *node)
+    void updateTargetNodeOnDirection()
     {
-        targetNode = node;
+        targetNode = currentNode->getDirections()[(int)runner->getDirection()].getNode();
     }
 
     Node *addNode()
@@ -59,10 +65,13 @@ public:
         return &nodes.back();
     }
 
-    Node *updateCurrentNode()
+    void updateCurrentNode()
     {
-        bool avaliableDir[DIRECTION_QTY] = {runner->getAvaliableDir()};
+        bool avaliableDir[DIRECTION_QTY] = {false};
         Direction currentNodeDir;
+
+        runner->getAvaliableDir(avaliableDir);
+
 
         switch (runner->getDirection())
         {
@@ -91,15 +100,38 @@ public:
         }
         targetNode->setDirection(currentNode, currentNodeDir, calculateDistanceFromCurrentNode());
         currentNode = targetNode;
-
-        return currentNode;
     }
 
     float calculateDistanceFromCurrentNode()
     {
-        Coordinate currentPos = runner->getPos();
-        Coordinate currentNodePos = currentNode->getCoordinate();
-        return ABS(currentPos.x) > ABS(currentNodePos.x) + runner->getSafeDistance() ? ABS(currentPos.x) + ABS(currentNodePos.x) : ABS(currentPos.y) + ABS(currentNodePos.y);
+        const Coordinate currentPos = runner->getPos();
+        const Coordinate currentNodePos = currentNode->getCoordinate();
+        return currentPos.distanceBetween(currentNodePos);
+    }
+
+    //DEBUG
+    void printNodes()
+    {
+        for (auto it : nodes)
+        {
+            Coordinate pos = it.getCoordinate();
+            cout << "X: " << pos.x << " Y: " << pos.y << " isVisited: " << it.isVisited() << endl;
+        }
+    }
+
+    void printCurrentNode()
+    {
+        Coordinate pos = currentNode->getCoordinate();
+        cout << "X: " << pos.x << " Y: " << pos.y << " isVisited: " << currentNode->isVisited() << endl
+             << endl;
+        for (auto it : currentNode->getDirections())
+        {
+            if (it.isReachable())
+            {
+                Coordinate pos = it.getNode()->getCoordinate();
+                cout << "X: " << pos.x << " Y: " << pos.y << " Distance: " << it.getLength() << endl;
+            }
+        }
     }
 };
 

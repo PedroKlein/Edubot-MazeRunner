@@ -14,7 +14,7 @@ public:
     {
 
     private:
-        float len = INT_MAX;
+        float len = (float)INT_MAX;
         Node *node = nullptr;
         friend class Node;
 
@@ -31,12 +31,12 @@ public:
             return len;
         }
 
-        Node *getNode()
+        Node *getNode() const
         {
             return node;
         }
 
-        void set(Node *n, int length)
+        void set(Node *const n, const float length)
         {
             node = n;
             len = length;
@@ -54,7 +54,7 @@ private:
     Coordinate pos;
 
 public:
-    Node() : pos(Coordinate(-2., -2.)){};
+    Node() : pos(Coordinate(INT_MAX, INT_MAX)){};
     Node(Coordinate pos) : pos(pos){};
     ~Node(){};
 
@@ -74,7 +74,7 @@ public:
         pos.y = coordinate.y;
     }
 
-    void setDirection(Node *n, Direction dir, int len = 1)
+    void setDirection(Node *n, Direction dir, float len = 1)
     {
         directions[dir].set(n, len);
     }
@@ -89,11 +89,11 @@ public:
         return visited;
     }
 
-    Path &connectingEdge(Node *to)
+    Path &connectingEdge(Node *n)
     {
         for (int i = 0; i < DIRECTION_QTY; ++i)
         {
-            if (getDirections()[i].getNode() == to)
+            if (getDirections()[i].getNode() == n)
             {
                 return getDirections()[i];
             }
