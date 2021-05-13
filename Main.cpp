@@ -1,5 +1,4 @@
 #include <iostream>
-#include <list>
 #include "MazeRunner.hpp"
 #include "Robot.hpp"
 
@@ -18,7 +17,7 @@ int main()
 	cout << "DISTANCIA SEGURA: " << robot->calculateSafeDistance() << endl;
 	MazeRunner *maze = new MazeRunner(robot);
 	maze->updateTargetNodeOnDirection();
-	maze->printCurrentNode();
+	maze->printNode(maze->getCurrentNode());
 
 	robot->move(ROBOT_SPEED);
 
@@ -31,7 +30,7 @@ int main()
 			hasPathSideways = true;
 			maze->updateCurrentNode();
 			maze->updateTargetNodeOnDirection();
-			maze->printCurrentNode();
+			maze->printNode(maze->getCurrentNode());
 		}
 		// quando o robo esta a uma distancia igual ou menor da segura de uma parede ele realiza uma rotacao segura para o lado com mais espaco.
 		if (robot->getSonar(FRONT_SONAR) <= robot->getSafeDistance())
@@ -51,6 +50,7 @@ int main()
 		{
 			hasPathSideways = false;
 		}
+
 		robot->sleepMilliseconds(DELAY_LOOP);
 	}
 

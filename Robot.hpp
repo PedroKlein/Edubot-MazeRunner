@@ -1,12 +1,8 @@
 #ifndef __ROBOT__
 #define __ROBOT__
 
-#include <iostream>
 #include "libs/EdubotLib.hpp"
 #include "Globals.hpp"
-
-using namespace std;
-
 
 // delay de 1.5 segundos para a rotacao.
 #define DELAY_ROTATION 1500
@@ -16,7 +12,9 @@ using namespace std;
 #define DELAY_SENSOR_MEASURE 50
 
 #define ROBOT_SPEED .4
-#define ROBOT_CAUTION_SPEED ROBOT_SPEED/2.
+#define ROBOT_CAUTION_SPEED ROBOT_SPEED / 2.
+#define ROBOT_SIZE 0.25
+#define HALF_ROBOT_SIZE ROBOT_SIZE / 2.
 
 // Menor distancia que o sensor pode detectar.
 #define DELTA_SAFE_DISTANCE 0.01
@@ -106,7 +104,7 @@ public:
 
 float Robot::calculateSafeDistance()
 {
-    sleepMilliseconds(DELAY_SENSOR_MEASURE);
+    this->sleepMilliseconds(DELAY_SENSOR_MEASURE);
     this->safeDistance = (this->getSonar(RIGHT_SONAR) + this->getSonar(LEFT_SONAR)) / 2.;
     this->minAvaliableDistance = this->safeDistance * 4;
     return this->safeDistance;
@@ -133,7 +131,7 @@ Bumper Robot::getBumperActive()
 
 void Robot::getAvaliableDir(bool dir[DIRECTION_QTY])
 {
-    const float minAvaliableDistance = safeDistance * 6;
+    const float minAvaliableDistance = safeDistance * 2 + HALF_ROBOT_SIZE;
     Direction currentDir = getDirection();
     Direction leftSonarDir, rightSonarDir;
 
@@ -157,7 +155,7 @@ void Robot::getAvaliableDir(bool dir[DIRECTION_QTY])
         break;
     }
 
-    if (this->getSonar(FRONT_SONAR) >= minAvaliableDistance)
+    if (this->getSonar(FRONT_SONAR) >= minAvaliableDistance + HALF_ROBOT_SIZE)
     {
         dir[(int)currentDir] = true;
     }

@@ -65,31 +65,50 @@ public:
         return &nodes.back();
     }
 
+    Node *getNodeWithin(Coordinate pos)
+    {
+        for (auto it = nodes.begin(); it != nodes.end(); ++it)
+        {
+            if (pos.isWithinCircle(runner->getSafeDistance() * 2, it->getCoordinate()))
+            {
+                runner->stop();
+                return &*it;
+            }
+        }
+        return nullptr;
+    }
+
     void updateCurrentNode()
     {
         bool avaliableDir[DIRECTION_QTY] = {false};
         Direction currentNodeDir;
-
-        runner->getAvaliableDir(avaliableDir);
-
+        Coordinate updatedPos = runner->getPos();
 
         switch (runner->getDirection())
         {
         case RIGHT_DIR:
             currentNodeDir = LEFT_DIR;
+            updatedPos.x += (runner->getSafeDistance() + HALF_ROBOT_SIZE);
             break;
         case DOWN_DIR:
             currentNodeDir = TOP_DIR;
+            updatedPos.y -= (runner->getSafeDistance() + HALF_ROBOT_SIZE);
             break;
         case LEFT_DIR:
             currentNodeDir = RIGHT_DIR;
+            updatedPos.x -= (runner->getSafeDistance() + HALF_ROBOT_SIZE);
             break;
         default:
             currentNodeDir = DOWN_DIR;
+            updatedPos.y += (runner->getSafeDistance() + HALF_ROBOT_SIZE);
             break;
         }
 
-        targetNode->setCoordinate(runner->getPos());
+        printNode(getNodeWithin(updatedPos));
+
+        targetNode->setCoordinate(updatedPos);
+
+        runner->getAvaliableDir(avaliableDir);
 
         for (int i = 0; i < DIRECTION_QTY; i++)
         {
@@ -98,15 +117,9 @@ public:
                 targetNode->setDirection(addNode(), (Direction)i, INT_MAX);
             }
         }
-        targetNode->setDirection(currentNode, currentNodeDir, calculateDistanceFromCurrentNode());
+        targetNode->setVisited(true);
+        targetNode->setDirection(currentNode, currentNodeDir, currentNode->getDistanceToNode(targetNode));
         currentNode = targetNode;
-    }
-
-    float calculateDistanceFromCurrentNode()
-    {
-        const Coordinate currentPos = runner->getPos();
-        const Coordinate currentNodePos = currentNode->getCoordinate();
-        return currentPos.distanceBetween(currentNodePos);
     }
 
     //DEBUG
@@ -119,12 +132,15 @@ public:
         }
     }
 
-    void printCurrentNode()
+    void printNode(Node *node)
     {
-        Coordinate pos = currentNode->getCoordinate();
-        cout << "X: " << pos.x << " Y: " << pos.y << " isVisited: " << currentNode->isVisited() << endl
+        if (!node)
+            return;
+
+        Coordinate pos = node->getCoordinate();
+        cout << "X: " << pos.x << " Y: " << pos.y << " isVisited: " << node->isVisited() << endl
              << endl;
-        for (auto it : currentNode->getDirections())
+        for (auto it : node->getDirections())
         {
             if (it.isReachable())
             {
@@ -132,6 +148,7 @@ public:
                 cout << "X: " << pos.x << " Y: " << pos.y << " Distance: " << it.getLength() << endl;
             }
         }
+        cout << endl;
     }
 };
 
