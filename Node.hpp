@@ -89,9 +89,17 @@ public:
         return visited;
     }
 
-    float getDistanceToNode(Node *&destNode) const
+    float getDistanceToNode(Node *destNode) const
     {
         return pos.distanceBetween(destNode->getCoordinate());
+    }
+
+    void linkToNode(Node *node, Direction dir)
+    {
+        Direction oppositDir = (Direction)(dir + 2 >= DIRECTION_QTY ? dir - 2 : dir + 2);
+        float distanceBetween = getDistanceToNode(node);
+        getDirections()[dir].set(node, distanceBetween);
+        node->getDirections()[oppositDir].set(this, distanceBetween);
     }
 
     Path &connectingEdge(Node *n)

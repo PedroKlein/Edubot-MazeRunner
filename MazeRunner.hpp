@@ -67,12 +67,14 @@ public:
 
     Node *getNodeWithin(Coordinate pos)
     {
-        for (auto it = nodes.begin(); it != nodes.end(); ++it)
+        for (Node node : nodes)
         {
-            if (pos.isWithinCircle(runner->getSafeDistance() * 2, it->getCoordinate()))
+            if (pos.isWithinCircle(runner->getSafeDistance() * 2, node.getCoordinate()))
             {
+                // TODO: delete old path node from the list.
+                currentNode->linkToNode(&node, runner->getDirection());
                 runner->stop();
-                return &*it;
+                return &node;
             }
         }
         return nullptr;
@@ -104,7 +106,10 @@ public:
             break;
         }
 
-        printNode(getNodeWithin(updatedPos));
+        if (getNodeWithin(updatedPos))
+        {
+            return;
+        }
 
         targetNode->setCoordinate(updatedPos);
 
@@ -118,7 +123,8 @@ public:
             }
         }
         targetNode->setVisited(true);
-        targetNode->setDirection(currentNode, currentNodeDir, currentNode->getDistanceToNode(targetNode));
+
+        currentNode->linkToNode(targetNode, runner->getDirection());
         currentNode = targetNode;
     }
 
