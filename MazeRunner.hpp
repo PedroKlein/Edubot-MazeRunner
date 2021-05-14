@@ -67,51 +67,50 @@ public:
 
     Node *getNodeWithin(Coordinate pos)
     {
-        for (Node node : nodes)
+        for (auto it = nodes.begin(); it != nodes.end(); ++it)
         {
-            if (pos.isWithinCircle(runner->getSafeDistance() * 2, node.getCoordinate()))
+            if (pos.isWithinCircle(runner->getSafeDistance() * 2, it->getCoordinate()))
             {
                 // TODO: delete old path node from the list.
-                currentNode->linkToNode(&node, runner->getDirection());
-                runner->stop();
-                return &node;
+                currentNode->linkToNode(&*it, runner->getDirection());
+                return &*it;
             }
         }
         return nullptr;
     }
 
-    void updateCurrentNode()
+    void centerRunnerOnNode(Node *node)
     {
-        bool avaliableDir[DIRECTION_QTY] = {false};
-        Direction currentNodeDir;
+    }
+
+    Coordinate getOffsetNodePos()
+    {
         Coordinate updatedPos = runner->getPos();
 
         switch (runner->getDirection())
         {
         case RIGHT_DIR:
-            currentNodeDir = LEFT_DIR;
             updatedPos.x += (runner->getSafeDistance() + HALF_ROBOT_SIZE);
             break;
         case DOWN_DIR:
-            currentNodeDir = TOP_DIR;
             updatedPos.y -= (runner->getSafeDistance() + HALF_ROBOT_SIZE);
             break;
         case LEFT_DIR:
-            currentNodeDir = RIGHT_DIR;
             updatedPos.x -= (runner->getSafeDistance() + HALF_ROBOT_SIZE);
             break;
         default:
-            currentNodeDir = DOWN_DIR;
             updatedPos.y += (runner->getSafeDistance() + HALF_ROBOT_SIZE);
             break;
         }
 
-        if (getNodeWithin(updatedPos))
-        {
-            return;
-        }
+        return updatedPos;
+    }
 
-        targetNode->setCoordinate(updatedPos);
+    void updateCurrentNode(Coordinate pos)
+    {
+        bool avaliableDir[DIRECTION_QTY] = {false};
+
+        targetNode->setCoordinate(pos);
 
         runner->getAvaliableDir(avaliableDir);
 

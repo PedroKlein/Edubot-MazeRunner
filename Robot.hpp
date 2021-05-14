@@ -92,6 +92,8 @@ public:
     // rotina que garante que o robo fara uma curva dentro da distancia segura.
     void safetyBeforeRotation();
 
+    void safeMoveDistance(float distance);
+
     // rotina que rotaciona o robo para um theta "absoluto" (0 a 360 com base no plano do ambiente).
     void faceTheta(float theta);
 
@@ -214,9 +216,41 @@ void Robot::correctRotation(float desiredTheta)
 {
     Bumper bumper = getBumperActive();
 
-    (int)bumper < (int)BACK_LEFT ? this->move(-ROBOT_CAUTION_SPEED) : this->move(ROBOT_CAUTION_SPEED);
+    (int)bumper < (int)BACK_LEFT ? this->move(-ROBOT_CAUTION_SPEED* 0.8) : this->move(ROBOT_CAUTION_SPEED * 0.8);
     this->sleepMilliseconds(50);
     faceTheta(desiredTheta);
+}
+
+void Robot::safeMoveDistance(float distance)
+{
+    this->stop();
+    this->sleepMilliseconds(DELAY_SENSOR_MEASURE);
+
+    Coordinate finalPos = this->getPos();
+    Direction movementDir = this->getDirection();
+
+    switch (movementDir)
+    {
+    case RIGHT_DIR:
+        finalPos.x += distance;
+        break;
+    case DOWN_DIR:
+        finalPos.y -= distance;
+        break;
+    case LEFT_DIR:
+        finalPos.x -= distance;
+        break;
+    default:
+        finalPos.y += distance;
+        break;
+    }
+
+    this->move(ROBOT_CAUTION_SPEED);
+    while (!this->getPos().hasReachedCoordinate(finalPos, movementDir))
+    {
+        this->sleepMilliseconds(DELAY_LOOP);
+    }
+    this->stop();
 }
 
 void Robot::safeRotate(float thetaRotation)

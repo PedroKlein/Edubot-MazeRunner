@@ -102,6 +102,20 @@ public:
         node->getDirections()[oppositDir].set(this, distanceBetween);
     }
 
+    Direction getNewPathDir()
+    {
+        for (int i = 0; i < DIRECTION_QTY; ++i)
+        {
+            Path currentPath = getDirections()[i];
+            if (currentPath.isReachable() && !currentPath.getNode()->isVisited())
+            {
+                return (Direction)i;
+            }
+        }
+
+        return DIRECTION_QTY;
+    }
+
     Path &connectingEdge(Node *n)
     {
         for (int i = 0; i < DIRECTION_QTY; ++i)

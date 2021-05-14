@@ -253,7 +253,7 @@ bool EdubotLib::move(double velocity){
     if(velocity >= -1.0 && velocity <= 1.0){
         std::stringstream ss;
         ss << "v" << std::to_string(velocity);
-        std::cout << "Sending move command, velocity = " << velocity << std::endl;
+        //std::cout << "Sending move command, velocity = " << velocity << std::endl;
         return this->sendToRobot(ss.str());
     }
     else {
@@ -266,7 +266,7 @@ bool EdubotLib::move(double velocity){
     
 bool EdubotLib::stop(){
     //message template: s
-    std::cout << "Sending stop command." << std::endl;
+    //std::cout << "Sending stop command." << std::endl;
     return this->sendToRobot("b");
 }
     
@@ -280,7 +280,7 @@ bool EdubotLib::rotate(double angle){
     if(angle >= -180.0 && angle <= 180.0){
         std::stringstream ss;
         ss << "r" << std::to_string(angle);
-        std::cout << "Sending rotate command, angle = " << angle << std::endl;
+        //std::cout << "Sending rotate command, angle = " << angle << std::endl;
         return this->sendToRobot(ss.str());
     }
     else {
@@ -292,7 +292,7 @@ bool EdubotLib::rotate(double angle){
     
 bool EdubotLib::neutral(){
     //message template: n
-    std::cout << "Sending neutral command." << std::endl;
+    //std::cout << "Sending neutral command." << std::endl;
     return this->sendToRobot("n");
 }
 
