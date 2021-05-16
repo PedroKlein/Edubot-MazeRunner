@@ -2,10 +2,12 @@
 #define __NODE__
 
 #include <climits>
+#include <iostream>
 #include <array>
 #include "Globals.hpp"
 
 using std::array;
+using namespace std;
 
 class Node
 {
@@ -98,6 +100,10 @@ public:
     {
         Direction oppositDir = (Direction)(dir + 2 >= DIRECTION_QTY ? dir - 2 : dir + 2);
         float distanceBetween = getDistanceToNode(node);
+        if (distanceBetween == 0)
+        {
+            return;
+        }
         getDirections()[dir].set(node, distanceBetween);
         node->getDirections()[oppositDir].set(this, distanceBetween);
     }

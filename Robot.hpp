@@ -9,15 +9,16 @@
 // delay de loops para o programa nao rodar muito diferente em outros computadores.
 #define DELAY_LOOP 1
 // delay para executar uma leitura importante e garantir que esta pode ser diferente da anterior.
-#define DELAY_SENSOR_MEASURE 50
+#define DELAY_SENSOR_MEASURE 100
 
-#define ROBOT_SPEED .4
+#define ROBOT_SPEED .3
 #define ROBOT_CAUTION_SPEED ROBOT_SPEED / 2.
 #define ROBOT_SIZE 0.25
 #define HALF_ROBOT_SIZE ROBOT_SIZE / 2.
 
 // Menor distancia que o sensor pode detectar.
 #define DELTA_SAFE_DISTANCE 0.01
+#define MAX_SONAR_DISTANCE 2.0
 
 enum Bumper
 {
@@ -64,14 +65,22 @@ public:
     {
         float theta = this->getTheta();
         theta = theta == 360 ? 0 : theta;
-        theta / 4;
         return (Direction)(theta / 90);
     }
 
     bool hasPathSideways()
     {
-        const float minAvaliableDistance = safeDistance * 2;
         return (this->getSonar(LEFT_SONAR) >= minAvaliableDistance) || (this->getSonar(RIGHT_SONAR) >= minAvaliableDistance);
+    }
+
+    bool isInEmptySpace()
+    {
+        bool result = true;
+        for (int16_t i = 0; i < SONAR_QTY; i++)
+        {
+            result &= (this->getSonar(i) >= 2 * minAvaliableDistance);
+        }
+        return result;
     }
 
     // a distancia segura eh calculada com base na media das distancias laterais iniciais do robo, ou seja,
@@ -97,18 +106,22 @@ public:
     // rotina que rotaciona o robo para um theta "absoluto" (0 a 360 com base no plano do ambiente).
     void faceTheta(float theta);
 
+    void safeFaceTheta(float theta);
+
     // rotina que corrigi possiveis batidas, colocando o robo na direcao inicialmente desejada.
     void correctRotation(float desiredTheta);
 
     // rotina de rotacao segura, corrigindo erros e mantendo distancia segura.
     void safeRotate(float thetaRotation);
+
+    void fragmentRotation(float thetaRotation, float times);
 };
 
 float Robot::calculateSafeDistance()
 {
     this->sleepMilliseconds(DELAY_SENSOR_MEASURE);
     this->safeDistance = (this->getSonar(RIGHT_SONAR) + this->getSonar(LEFT_SONAR)) / 2.;
-    this->minAvaliableDistance = this->safeDistance * 4;
+    this->minAvaliableDistance = this->safeDistance * 2 + HALF_ROBOT_SIZE;
     return this->safeDistance;
 }
 
@@ -133,7 +146,9 @@ Bumper Robot::getBumperActive()
 
 void Robot::getAvaliableDir(bool dir[DIRECTION_QTY])
 {
-    const float minAvaliableDistance = safeDistance * 2 + HALF_ROBOT_SIZE;
+    this->stop();
+    this->sleepMilliseconds(DELAY_SENSOR_MEASURE);
+
     Direction currentDir = getDirection();
     Direction leftSonarDir, rightSonarDir;
 
@@ -157,20 +172,11 @@ void Robot::getAvaliableDir(bool dir[DIRECTION_QTY])
         break;
     }
 
-    if (this->getSonar(FRONT_SONAR) >= minAvaliableDistance + HALF_ROBOT_SIZE)
-    {
-        dir[(int)currentDir] = true;
-    }
+    dir[(int)currentDir] = this->getSonar(FRONT_SONAR) >= minAvaliableDistance + ROBOT_SIZE;
+    dir[(int)rightSonarDir] = this->getSonar(RIGHT_SONAR) >= minAvaliableDistance;
+    dir[(int)leftSonarDir] = this->getSonar(LEFT_SONAR) >= minAvaliableDistance;
 
-    if (this->getSonar(RIGHT_SONAR) >= minAvaliableDistance)
-    {
-        dir[(int)rightSonarDir] = true;
-    }
-
-    if (this->getSonar(LEFT_SONAR) >= minAvaliableDistance)
-    {
-        dir[(int)leftSonarDir] = true;
-    }
+    this->move(ROBOT_SPEED);
 }
 
 float Robot::getDesiredTheta(float thetaRotation, float thetaBeforeRotation)
@@ -181,20 +187,6 @@ float Robot::getDesiredTheta(float thetaRotation, float thetaBeforeRotation)
         return 360 + deltaTheta;
     }
     return deltaTheta > 360 ? deltaTheta - 360 : deltaTheta;
-}
-
-void Robot::safetyBeforeRotation()
-{
-    this->sleepMilliseconds(DELAY_SENSOR_MEASURE);
-    if (this->getSonar(FRONT_SONAR) <= this->getSafeDistance() - DELTA_SAFE_DISTANCE)
-    {
-        this->move(-ROBOT_CAUTION_SPEED);
-        while (this->getSonar(FRONT_SONAR) <= this->getSafeDistance())
-        {
-            this->sleepMilliseconds(DELAY_LOOP);
-        }
-        this->stop();
-    }
 }
 
 void Robot::faceTheta(float theta)
@@ -212,11 +204,25 @@ void Robot::faceTheta(float theta)
     }
 }
 
+void Robot::safeFaceTheta(float theta)
+{
+    float currentTheta = this->getTheta();
+    float deltaTheta = currentTheta - theta;
+
+    if (currentTheta > theta)
+    {
+        deltaTheta > 180 ? safeRotate(-(360 - deltaTheta)) : safeRotate(deltaTheta);
+    }
+    else
+    {
+        ABS(deltaTheta) > 180 ? safeRotate(360 - ABS(deltaTheta)) : safeRotate(deltaTheta);
+    }
+}
+
 void Robot::correctRotation(float desiredTheta)
 {
     Bumper bumper = getBumperActive();
-
-    (int)bumper < (int)BACK_LEFT ? this->move(-ROBOT_CAUTION_SPEED* 0.8) : this->move(ROBOT_CAUTION_SPEED * 0.8);
+    (int)bumper < (int)BACK_LEFT ? this->move(-ROBOT_CAUTION_SPEED) : this->move(ROBOT_CAUTION_SPEED);
     this->sleepMilliseconds(50);
     faceTheta(desiredTheta);
 }
@@ -253,19 +259,66 @@ void Robot::safeMoveDistance(float distance)
     this->stop();
 }
 
+void Robot::safetyBeforeRotation()
+{
+    this->sleepMilliseconds(DELAY_SENSOR_MEASURE);
+    if (this->getSonar(FRONT_SONAR) <= this->getSafeDistance() - DELTA_SAFE_DISTANCE)
+    {
+        this->move(-ROBOT_CAUTION_SPEED);
+        while (this->getSonar(FRONT_SONAR) <= this->getSafeDistance() - DELTA_SAFE_DISTANCE)
+        {
+            //this->sleepMilliseconds(DELAY_LOOP);
+        }
+        this->stop();
+    }
+}
+
+void Robot::fragmentRotation(float thetaRotation, float times)
+{
+    for (int i = 0; i < times; i++)
+    {
+        rotateRobot(thetaRotation / times);
+        this->move(ROBOT_CAUTION_SPEED);
+        this->sleepMilliseconds(50 / times);
+        this->stop();
+    }
+}
+
 void Robot::safeRotate(float thetaRotation)
 {
     this->stop();
     this->sleepMilliseconds(DELAY_SENSOR_MEASURE);
 
     float desiredTheta = getDesiredTheta(thetaRotation, this->getTheta());
-
     safetyBeforeRotation();
-    rotateRobot(thetaRotation);
 
+    // if (thetaRotation > 0)
+    // {
+    //     if (this->getSonar(LEFT_SONAR) < safeDistance)
+    //     {
+    //         fragmentRotation(thetaRotation, 2);
+    //     }
+    //     else
+    //     {
+    //         rotateRobot(thetaRotation);
+    //     }
+    // }
+    // else
+    // {
+    //     if (this->getSonar(RIGHT_SONAR) < safeDistance)
+    //     {
+    //         fragmentRotation(thetaRotation, 2);
+    //     }
+    //     else
+    //     {
+    //         rotateRobot(thetaRotation);
+    //     }
+    // }
+    rotateRobot(thetaRotation);
     if (getBumperActive() != NONE)
     {
-        while (this->getTheta() != ABS(desiredTheta))
+        // TODO: infinite loop when rotation = -0;
+        while (this->getTheta() != desiredTheta)
         {
             correctRotation(desiredTheta);
         }

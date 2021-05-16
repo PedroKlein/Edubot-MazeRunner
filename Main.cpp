@@ -27,6 +27,13 @@ int main()
 
 		if (!hasPathSideways && robot->hasPathSideways())
 		{
+
+			if (robot->isInEmptySpace())
+			{
+				cout << "LABIRINTO CONCLUIDO!" << endl;
+				break;
+			}
+
 			hasPathSideways = true;
 
 			Coordinate offsetNodePos = maze->getOffsetNodePos();
@@ -36,14 +43,13 @@ int main()
 				Direction newPathDir = node->getNewPathDir();
 				if (newPathDir < DIRECTION_QTY)
 				{
-					robot->safeMoveDistance(HALF_ROBOT_SIZE);
-					robot->faceTheta(newPathDir * 90);
+					robot->safeMoveDistance(HALF_ROBOT_SIZE + SAFE_DISTANCE / 2.);
+					robot->safeFaceTheta(newPathDir * 90);
 					robot->move(ROBOT_SPEED);
 					isBackTracking = false;
 				}
 				else if (!isBackTracking)
 				{
-					robot->stop();
 					robot->safeRotate(180);
 					isBackTracking = true;
 				}
@@ -59,7 +65,7 @@ int main()
 		if (robot->getSonar(FRONT_SONAR) <= SAFE_DISTANCE)
 		{
 			isCloseToWall = false;
-			robot->getSonar(LEFT_SONAR) < robot->getSonar(RIGHT_SONAR) ? robot->safeRotate(90) : robot->safeRotate(-90);
+			robot->getSonar(LEFT_SONAR) <= robot->getSonar(RIGHT_SONAR) ? robot->safeRotate(90) : robot->safeRotate(-90);
 			maze->updateTargetNodeOnDirection();
 		}
 		// quando o robo esta perto de uma parede ele desacelera.

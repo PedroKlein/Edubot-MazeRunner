@@ -48,6 +48,11 @@ public:
         return currentNode;
     }
 
+    Node *getTargetNode()
+    {
+        return targetNode;
+    }
+
     void setCurrentNode(Node *node)
     {
         currentNode = node;
@@ -69,22 +74,21 @@ public:
     {
         for (auto it = nodes.begin(); it != nodes.end(); ++it)
         {
-            if (pos.isWithinCircle(runner->getSafeDistance() * 2, it->getCoordinate()))
+            if (pos.isWithinCircle(runner->getSafeDistance() + HALF_ROBOT_SIZE, it->getCoordinate()))
             {
                 // TODO: delete old path node from the list.
                 currentNode->linkToNode(&*it, runner->getDirection());
+                currentNode = &*it;
                 return &*it;
             }
         }
         return nullptr;
     }
 
-    void centerRunnerOnNode(Node *node)
-    {
-    }
-
     Coordinate getOffsetNodePos()
     {
+        runner->stop();
+        runner->sleepMilliseconds(DELAY_SENSOR_MEASURE);
         Coordinate updatedPos = runner->getPos();
 
         switch (runner->getDirection())
@@ -102,6 +106,8 @@ public:
             updatedPos.y += (runner->getSafeDistance() + HALF_ROBOT_SIZE);
             break;
         }
+
+        runner->move(ROBOT_SPEED);
 
         return updatedPos;
     }
