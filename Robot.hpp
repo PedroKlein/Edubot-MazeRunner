@@ -56,6 +56,11 @@ public:
         return safeDistance;
     };
 
+    float getMinAvaliableDistance() const
+    {
+        return minAvaliableDistance;
+    };
+
     Coordinate getPos()
     {
         return Coordinate(this->getX(), this->getY());
@@ -75,11 +80,14 @@ public:
 
     bool isInEmptySpace()
     {
+        this->stop();
+        this->sleepMilliseconds(DELAY_SENSOR_MEASURE);
         bool result = true;
         for (int16_t i = 0; i < SONAR_QTY; i++)
         {
             result &= (this->getSonar(i) >= 2 * minAvaliableDistance);
         }
+        this->move(ROBOT_SPEED);
         return result;
     }
 
@@ -318,8 +326,12 @@ void Robot::safeRotate(float thetaRotation)
     if (getBumperActive() != NONE)
     {
         // TODO: infinite loop when rotation = -0;
-        while (this->getTheta() != desiredTheta)
+        while (this->getTheta() != ABS(desiredTheta))
         {
+            if (this->getTheta() == 360 && ABS(desiredTheta) == 0)
+            {
+                break;
+            }
             correctRotation(desiredTheta);
         }
     }

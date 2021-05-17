@@ -65,7 +65,16 @@ int main()
 		if (robot->getSonar(FRONT_SONAR) <= SAFE_DISTANCE)
 		{
 			isCloseToWall = false;
-			robot->getSonar(LEFT_SONAR) <= robot->getSonar(RIGHT_SONAR) ? robot->safeRotate(90) : robot->safeRotate(-90);
+			if (isBackTracking)
+			{
+				robot->getSonar(LEFT_SONAR) >= robot->getMinAvaliableDistance() ? robot->safeRotate(-90) : robot->safeRotate(90);
+			}
+			else
+			{
+				robot->getSonar(RIGHT_SONAR) >= robot->getMinAvaliableDistance() ? robot->safeRotate(90) : robot->safeRotate(-90);
+			}
+
+			//robot->getSonar(LEFT_SONAR) <= robot->getSonar(RIGHT_SONAR) ? robot->safeRotate(90) : robot->safeRotate(-90);
 			maze->updateTargetNodeOnDirection();
 		}
 		// quando o robo esta perto de uma parede ele desacelera.
