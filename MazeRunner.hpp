@@ -76,7 +76,6 @@ public:
         {
             if (pos.isWithinCircle(runner->getSafeDistance() + HALF_ROBOT_SIZE, it->getCoordinate()))
             {
-                // TODO: delete old path node from the list.
                 currentNode->linkToNode(&*it, runner->getDirection());
                 currentNode = &*it;
                 return &*it;
@@ -87,8 +86,6 @@ public:
 
     Coordinate getOffsetNodePos()
     {
-        runner->stop();
-        runner->sleepMilliseconds(DELAY_SENSOR_MEASURE);
         Coordinate updatedPos = runner->getPos();
 
         switch (runner->getDirection())
@@ -106,8 +103,6 @@ public:
             updatedPos.y += (runner->getSafeDistance() + HALF_ROBOT_SIZE);
             break;
         }
-
-        runner->move(ROBOT_SPEED);
 
         return updatedPos;
     }
@@ -131,6 +126,7 @@ public:
 
         currentNode->linkToNode(targetNode, runner->getDirection());
         currentNode = targetNode;
+        printNode(currentNode);
     }
 
     //DEBUG

@@ -80,15 +80,21 @@ public:
 
     bool isInEmptySpace()
     {
-        this->stop();
-        this->sleepMilliseconds(DELAY_SENSOR_MEASURE);
         bool result = true;
-        for (int16_t i = 0; i < SONAR_QTY; i++)
+        for (int i = 0; i < SONAR_QTY; i++)
         {
             result &= (this->getSonar(i) >= 2 * minAvaliableDistance);
         }
-        this->move(ROBOT_SPEED);
         return result;
+    }
+
+    bool isInDeadEnd()
+    {
+        bool result = false;
+        result |= (this->getSonar(FRONT_SONAR) >= minAvaliableDistance);
+        result |= (this->getSonar(LEFT_SONAR) >= minAvaliableDistance);
+        result |= (this->getSonar(RIGHT_SONAR) >= minAvaliableDistance);
+        return !result;
     }
 
     // a distancia segura eh calculada com base na media das distancias laterais iniciais do robo, ou seja,
@@ -101,7 +107,7 @@ public:
     // retorna o bumper que estiver ativo.
     Bumper getBumperActive();
 
-    void getAvaliableDir(bool dir[DIRECTION_QTY]);
+    void getAvaliableDir(bool outDir[DIRECTION_QTY]);
 
     // retorna o theta "absoluto" (0 a 360 com base no plano do ambiente) desejado com uma rotacao.
     float getDesiredTheta(float thetaRotation, float thetaBeforeRotation);
@@ -152,11 +158,8 @@ Bumper Robot::getBumperActive()
     return NONE;
 }
 
-void Robot::getAvaliableDir(bool dir[DIRECTION_QTY])
+void Robot::getAvaliableDir(bool outDir[DIRECTION_QTY])
 {
-    this->stop();
-    this->sleepMilliseconds(DELAY_SENSOR_MEASURE);
-
     Direction currentDir = getDirection();
     Direction leftSonarDir, rightSonarDir;
 
@@ -180,11 +183,9 @@ void Robot::getAvaliableDir(bool dir[DIRECTION_QTY])
         break;
     }
 
-    dir[(int)currentDir] = this->getSonar(FRONT_SONAR) >= minAvaliableDistance + ROBOT_SIZE;
-    dir[(int)rightSonarDir] = this->getSonar(RIGHT_SONAR) >= minAvaliableDistance;
-    dir[(int)leftSonarDir] = this->getSonar(LEFT_SONAR) >= minAvaliableDistance;
-
-    this->move(ROBOT_SPEED);
+    outDir[(int)currentDir] = this->getSonar(FRONT_SONAR) >= minAvaliableDistance + ROBOT_SIZE;
+    outDir[(int)rightSonarDir] = this->getSonar(RIGHT_SONAR) >= minAvaliableDistance;
+    outDir[(int)leftSonarDir] = this->getSonar(LEFT_SONAR) >= minAvaliableDistance;
 }
 
 float Robot::getDesiredTheta(float thetaRotation, float thetaBeforeRotation)
@@ -237,9 +238,6 @@ void Robot::correctRotation(float desiredTheta)
 
 void Robot::safeMoveDistance(float distance)
 {
-    this->stop();
-    this->sleepMilliseconds(DELAY_SENSOR_MEASURE);
-
     Coordinate finalPos = this->getPos();
     Direction movementDir = this->getDirection();
 

@@ -121,18 +121,6 @@ public:
 
         return DIRECTION_QTY;
     }
-
-    Path &connectingEdge(Node *n)
-    {
-        for (int i = 0; i < DIRECTION_QTY; ++i)
-        {
-            if (getDirections()[i].getNode() == n)
-            {
-                return getDirections()[i];
-            }
-        }
-        throw;
-    }
 };
 
 #endif
