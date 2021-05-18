@@ -2,12 +2,13 @@
 #define __NODE__
 
 #include <climits>
-#include <iostream>
+#include <list>
 #include <array>
+#include <utility>
 #include "Globals.hpp"
 
 using std::array;
-using namespace std;
+using std::list;
 
 class Node
 {
@@ -91,6 +92,11 @@ public:
         return visited;
     }
 
+    bool isEqual(Node *node)
+    {
+        return node->pos.isEqual(this->pos);
+    }
+
     float getDistanceToNode(Node *destNode) const
     {
         return pos.distanceBetween(destNode->getCoordinate());
@@ -120,6 +126,45 @@ public:
         }
 
         return DIRECTION_QTY;
+    }
+
+    pair<list<Direction>, float> shortestPathToNode(Node *node)
+    {
+        
+    }
+
+    list<Direction> getDirectionsToNewPath()
+    {
+        list<Direction> directionsToNewPath;
+        Node *currentNode = this, *initialNode = this;
+
+        while (currentNode->getNewPathDir() == DIRECTION_QTY)
+        {
+            float minDistance = INT_MAX;
+            Direction selectedDir = DIRECTION_QTY;
+
+            for (int i = 0; i < DIRECTION_QTY; ++i)
+            {
+                Path currentPath = getDirections()[i];
+
+                if (currentPath.isReachable() && !currentPath.getNode()->isEqual(currentNode) && minDistance > currentPath.getLength())
+                {
+                    minDistance = currentPath.getLength();
+                    selectedDir = (Direction)i;
+                    currentNode = currentPath.getNode();
+                }
+            }
+
+            if (currentNode->isEqual(initialNode))
+            {
+            }
+
+            directionsToNewPath.push_back(selectedDir);
+        }
+
+        directionsToNewPath.push_back(currentNode->getNewPathDir());
+
+        return directionsToNewPath;
     }
 };
 

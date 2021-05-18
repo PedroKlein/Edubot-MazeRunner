@@ -1,4 +1,5 @@
 #include <iostream>
+#include <list>
 #include "MazeRunner.hpp"
 #include "Robot.hpp"
 
@@ -23,6 +24,8 @@ int main()
 	while (robot->isConnected())
 	{
 		static bool isCloseToWall = false, hasPathSideways = false, isBackTracking = false;
+		static list<Direction> dirToNewPath;
+		dirToNewPath.size();
 
 		if (!hasPathSideways && robot->hasPathSideways())
 		{
@@ -39,18 +42,20 @@ int main()
 
 			if (auto node = maze->getNodeWithin(offsetNodePos))
 			{
-				Direction newPathDir = node->getNewPathDir();
-				if (newPathDir < DIRECTION_QTY)
+				if (!isBackTracking)
 				{
-					robot->safeMoveDistance(HALF_ROBOT_SIZE + SAFE_DISTANCE / 2.);
-					robot->safeFaceTheta(newPathDir * 90);
-					robot->move(ROBOT_SPEED);
-					isBackTracking = false;
-				}
-				else if (!isBackTracking)
-				{
-					robot->safeRotate(180);
+					dirToNewPath = maze->getCurrentNode()->getDirectionsToNewPath();
 					isBackTracking = true;
+				}
+
+				robot->safeMoveDistance(HALF_ROBOT_SIZE + SAFE_DISTANCE / 2.);
+				robot->safeFaceTheta(dirToNewPath.back() * 90);
+				robot->move(ROBOT_SPEED);
+				dirToNewPath.pop_back();
+
+				if (!dirToNewPath.size())
+				{
+					isBackTracking = false;
 				}
 			}
 			else
@@ -70,11 +75,7 @@ int main()
 				maze->updateCurrentNode(robot->getPos());
 				robot->safeRotate(180);
 			}
-			else if (isBackTracking)
-			{
-				robot->getSonar(LEFT_SONAR) >= robot->getMinAvaliableDistance() ? robot->safeRotate(-90) : robot->safeRotate(90);
-			}
-			else
+			else if (!isBackTracking)
 			{
 				robot->getSonar(RIGHT_SONAR) >= robot->getMinAvaliableDistance() ? robot->safeRotate(90) : robot->safeRotate(-90);
 			}

@@ -84,6 +84,20 @@ public:
         return nullptr;
     }
 
+    list<Node *> getAllNodesWithNewPaths()
+    {
+        list<Node *> allNodesWithNewPaths;
+        for (auto it = nodes.begin(); it != nodes.end(); ++it)
+        {
+            if (it->getNewPathDir() == DIRECTION_QTY)
+            {
+                allNodesWithNewPaths.push_back(&*it);
+            }
+        }
+
+        return allNodesWithNewPaths;
+    }
+
     Coordinate getOffsetNodePos()
     {
         Coordinate updatedPos = runner->getPos();

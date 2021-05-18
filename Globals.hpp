@@ -22,6 +22,11 @@ struct Coordinate
 
     Coordinate(float x, float y) : x(x), y(y) {}
 
+    bool isEqual(Coordinate pos)
+    {
+        return (x == pos.x) && (y == pos.y);
+    }
+
     bool isWithinCircle(const float radius, const Coordinate center) const
     {
         return SQUARE((x - center.x)) + SQUARE((y - center.y)) <= SQUARE(radius);
