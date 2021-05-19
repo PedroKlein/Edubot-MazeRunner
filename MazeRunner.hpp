@@ -6,7 +6,7 @@
 #include <list>
 #include "Node.hpp"
 #include "Robot.hpp"
-#include "Globals.hpp"
+#include "Coordinate.hpp"
 
 using namespace std;
 
@@ -22,6 +22,7 @@ private:
 public:
     ~MazeRunner() {}
 
+    //inicia labirinto com o primeirto node na posicao do robo e com um caminho para a direita.
     MazeRunner(Robot *robot)
     {
         runner = robot;
@@ -33,22 +34,22 @@ public:
         currentNode = &nodes.back();
     }
 
-    Robot *getRunner()
+    Robot *getRunner() const
     {
         return runner;
     }
 
-    list<Node> getNodes()
+    list<Node> getNodes() const
     {
         return nodes;
     }
 
-    Node *getCurrentNode()
+    Node *getCurrentNode() const
     {
         return currentNode;
     }
 
-    Node *getTargetNode()
+    Node *getTargetNode() const
     {
         return targetNode;
     }
@@ -58,6 +59,7 @@ public:
         currentNode = node;
     }
 
+    // atualiza target node para o node ao qual o robo esta apontando
     void updateTargetNodeOnDirection()
     {
         targetNode = currentNode->getDirections()[(int)runner->getDirection()].getNode();
@@ -70,6 +72,8 @@ public:
         return &nodes.back();
     }
 
+    // procura um node dentro da posicao do runner, se tiver,
+    // conecta com o current node e entao o current node vira ele
     Node *getNodeWithin(Coordinate pos)
     {
         for (auto it = nodes.begin(); it != nodes.end(); ++it)
@@ -84,7 +88,8 @@ public:
         return nullptr;
     }
 
-    Coordinate getOffsetNodePos()
+    // offset para compensar a coordenada atual do runner e colocar o node no centro da interseccao
+    Coordinate getOffsetNodePos() const
     {
         Coordinate updatedPos = runner->getPos();
 
@@ -107,6 +112,9 @@ public:
         return updatedPos;
     }
 
+    // atualiza o target node com a coordenada passada, seta ele como ja visitado,
+    // preeche o array de direcoes possiveis, conecta ele com o current node
+    // e entao o current node vira ele
     void updateCurrentNode(Coordinate pos)
     {
         bool avaliableDir[DIRECTION_QTY] = {false};

@@ -13,16 +13,22 @@ int main()
 		cout << "Could not connect on robot!" << endl;
 		return 0;
 	}
+
 	const float SAFE_DISTANCE = robot->calculateSafeDistance();
+
 	cout << "DISTANCIA SEGURA: " << SAFE_DISTANCE << endl;
+
 	MazeRunner *maze = new MazeRunner(robot);
+
 	maze->updateTargetNodeOnDirection();
 
 	robot->move(ROBOT_SPEED);
 
 	while (robot->isConnected())
 	{
-		static bool isCloseToWall = false, hasPathSideways = false, isBackTracking = false;
+		// flags para evitar repeticoes desnecessarias de condicoes
+		static bool isCloseToWall = false, hasPathSideways = false;
+		static bool isBackTracking = false;
 
 		if (!hasPathSideways && robot->hasPathSideways())
 		{
@@ -59,7 +65,7 @@ int main()
 			}
 			maze->updateTargetNodeOnDirection();
 		}
-		// quando o robo esta a uma distancia igual ou menor da segura de uma parede ele realiza uma rotacao segura para o lado com mais espaco.
+
 		if (robot->getSonar(FRONT_SONAR) <= SAFE_DISTANCE)
 		{
 			isCloseToWall = false;

@@ -4,7 +4,7 @@
 #include <climits>
 #include <iostream>
 #include <array>
-#include "Globals.hpp"
+#include "Coordinate.hpp"
 
 using std::array;
 using namespace std;
@@ -16,7 +16,7 @@ public:
     {
 
     private:
-        float len = (float)INT_MAX;
+        float len = INT_MAX;
         Node *node = nullptr;
         friend class Node;
 
@@ -76,7 +76,7 @@ public:
         pos.y = coordinate.y;
     }
 
-    void setDirection(Node *n, Direction dir, float len = 1)
+    void setDirection(Node *n, Direction dir, float len)
     {
         directions[dir].set(n, len);
     }
@@ -86,7 +86,7 @@ public:
         visited = b;
     }
 
-    bool isVisited()
+    bool isVisited() const
     {
         return visited;
     }
@@ -96,6 +96,7 @@ public:
         return pos.distanceBetween(destNode->getCoordinate());
     }
 
+    // conecta ao node passado na direcao passada, calculando a distancia entre os dois
     void linkToNode(Node *node, Direction dir)
     {
         Direction oppositDir = (Direction)(dir + 2 >= DIRECTION_QTY ? dir - 2 : dir + 2);

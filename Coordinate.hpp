@@ -3,6 +3,7 @@
 
 #include <math.h>
 
+// macro para elevar numero ao quadrado.
 #define SQUARE(x) (x * x)
 // macro para valor absoluto.
 #define ABS(x) ((x) >= 0 ? (x) : -(x))
@@ -15,6 +16,7 @@ enum Direction
     DOWN_DIR,
     DIRECTION_QTY
 };
+
 struct Coordinate
 {
     float x = INT_MAX;

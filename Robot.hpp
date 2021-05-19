@@ -2,7 +2,7 @@
 #define __ROBOT__
 
 #include "libs/EdubotLib.hpp"
-#include "Globals.hpp"
+#include "Coordinate.hpp"
 
 // delay de 1.5 segundos para a rotacao.
 #define DELAY_ROTATION 1500
@@ -13,6 +13,7 @@
 
 #define ROBOT_SPEED .3
 #define ROBOT_CAUTION_SPEED ROBOT_SPEED / 2.
+
 #define ROBOT_SIZE 0.25
 #define HALF_ROBOT_SIZE ROBOT_SIZE / 2.
 
@@ -20,6 +21,7 @@
 #define DELTA_SAFE_DISTANCE 0.01
 #define MAX_SONAR_DISTANCE 2.0
 
+// enum de indices dos bumpers.
 enum Bumper
 {
     FRONT_LEFT,
@@ -29,6 +31,7 @@ enum Bumper
     BUMPER_QTY,
     NONE
 };
+
 // enum de indices dos sonares.
 enum Sonar
 {
@@ -66,6 +69,7 @@ public:
         return Coordinate(this->getX(), this->getY());
     }
 
+    // retorna direcao absoluta a qual o robo esta apontando
     Direction getDirection()
     {
         float theta = this->getTheta();
@@ -73,11 +77,13 @@ public:
         return (Direction)(theta / 90);
     }
 
+    // verifica se ha caminho viavel nas laterais
     bool hasPathSideways()
     {
         return (this->getSonar(LEFT_SONAR) >= minAvaliableDistance) || (this->getSonar(RIGHT_SONAR) >= minAvaliableDistance);
     }
 
+    // verifica se o robo esta em um espaco vazio
     bool isInEmptySpace()
     {
         bool result = true;
@@ -88,6 +94,7 @@ public:
         return result;
     }
 
+    // verifica se o robo esta em um beco sem saida
     bool isInDeadEnd()
     {
         bool result = false;
@@ -115,11 +122,13 @@ public:
     // rotina que garante que o robo fara uma curva dentro da distancia segura.
     void safetyBeforeRotation();
 
+    // rotina de movimentacao segura por uma certa distanca.
     void safeMoveDistance(float distance);
 
     // rotina que rotaciona o robo para um theta "absoluto" (0 a 360 com base no plano do ambiente).
     void faceTheta(float theta);
 
+    // versao segura da faceTheta (corrigi colisoes)
     void safeFaceTheta(float theta);
 
     // rotina que corrigi possiveis batidas, colocando o robo na direcao inicialmente desejada.
@@ -128,6 +137,7 @@ public:
     // rotina de rotacao segura, corrigindo erros e mantendo distancia segura.
     void safeRotate(float thetaRotation);
 
+    // rotina que fragmaneta a rotacao de um determiando angulo
     void fragmentRotation(float thetaRotation, float times);
 };
 
@@ -139,7 +149,6 @@ float Robot::calculateSafeDistance()
     return this->safeDistance;
 }
 
-// rotina simples de rotacao.
 void Robot::rotateRobot(float theta)
 {
     this->rotate(theta);
