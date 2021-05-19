@@ -1,1 +1,1 @@
-# Edubot-MazeSolver
+# Edubot-MazeRunner
